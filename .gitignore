@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.vscode/
+.idea/
+backend/storage/app/public/*
+!backend/storage/app/public/.gitkeep
+backend/database/database.sqlite
+backend/vendor/
+frontend/node_modules/
+frontend/dist/
