@@ -12,18 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
-
-        $middleware->alias([
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-        ]);
-
-        // Allow CORS for development
-        $middleware->validateCsrfTokens(except: [
-            'api/*',
-        ]);
+        // CORS is handled by fruitcake/laravel-cors package
+        // No additional middleware configuration needed for simple API
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

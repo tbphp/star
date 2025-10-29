@@ -34,9 +34,9 @@ export const formatDateTime = (date: string): string => {
 export const generateStarStack = (current: number, total: number, maxStars: number = 10): string => {
   if (total === 0) return ''
 
-  const ratio = current / total
+  const ratio = Math.min(current / total, 1) // Cap at 1 to prevent overflow
   const filledCount = Math.floor(ratio * maxStars)
-  const emptyCount = maxStars - filledCount
+  const emptyCount = Math.max(0, maxStars - filledCount) // Prevent negative
 
   return '⭐'.repeat(filledCount) + '☆'.repeat(emptyCount)
 }

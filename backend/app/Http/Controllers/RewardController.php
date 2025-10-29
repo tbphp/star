@@ -32,7 +32,7 @@ class RewardController extends Controller
                 return [
                     'id' => $reward->id,
                     'name' => $reward->name,
-                    'image' => $reward->image ? Storage::url($reward->image) : null,
+                    'image' => $reward->image ? url(Storage::url($reward->image)) : null,
                     'star_cost' => $reward->star_cost,
                     'is_redeemed' => $reward->is_redeemed,
                     'redeemed_at' => $reward->redeemed_at?->format('Y-m-d H:i'),
@@ -93,7 +93,7 @@ class RewardController extends Controller
                 'data' => [
                     'id' => $reward->id,
                     'name' => $reward->name,
-                    'image' => $reward->image ? Storage::url($reward->image) : null,
+                    'image' => $reward->image ? url(Storage::url($reward->image)) : null,
                     'star_cost' => $reward->star_cost,
                     'children' => $reward->children,
                 ],

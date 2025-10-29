@@ -1,25 +1,18 @@
 <template>
-  <div class="child-card card">
-    <div class="card-header">
-      <div class="avatar">
-        <img v-if="child.avatar" :src="child.avatar" :alt="child.name" />
-        <span v-else class="avatar-placeholder">{{ genderEmoji }}</span>
-      </div>
-      <div class="info">
-        <h3 class="name">{{ child.name }}</h3>
-        <p class="age">{{ child.age }}岁 {{ genderEmoji }}</p>
-      </div>
+  <div class="child-card card" @click="handleCardClick">
+    <div class="avatar">
+      <img v-if="child.avatar" :src="child.avatar" :alt="child.name" />
+      <span v-else class="avatar-placeholder">{{ genderEmoji }}</span>
     </div>
+
+    <h3 class="name">{{ child.name }}</h3>
 
     <div class="star-display">
       <span class="star-icon">⭐</span>
       <span class="star-count">×{{ child.star_count }}</span>
     </div>
 
-    <div class="actions">
-      <button class="btn-action btn-view" @click="emit('view', child)" title="查看详情">
-        👁️
-      </button>
+    <div class="actions" @click.stop>
       <button class="btn-action btn-add" @click="emit('addStar', child)" title="加星星">
         ➕
       </button>
@@ -49,11 +42,20 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
+
+const handleCardClick = () => {
+  emit('view', props.child)
+}
 </script>
 
 <style scoped>
 .child-card {
-  padding: 24px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -62,22 +64,17 @@ const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
 .avatar {
-  width: 64px;
-  height: 64px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .avatar img {
@@ -87,24 +84,14 @@ const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
 }
 
 .avatar-placeholder {
-  font-size: 40px;
-}
-
-.info {
-  flex: 1;
+  font-size: 64px;
 }
 
 .name {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin: 0 0 4px 0;
+  margin: 0 0 16px 0;
   color: #333;
-}
-
-.age {
-  font-size: 16px;
-  color: #666;
-  margin: 0;
 }
 
 .star-display {
@@ -112,49 +99,46 @@ const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 16px;
+  padding: 16px 32px;
   background: linear-gradient(135deg, #fff5e1 0%, #ffe4b5 100%);
-  border-radius: 16px;
+  border-radius: 20px;
   margin-bottom: 20px;
+  min-width: 160px;
 }
 
 .star-icon {
-  font-size: 32px;
+  font-size: 36px;
 }
 
 .star-count {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   color: #ff8c00;
 }
 
 .actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
 }
 
 .btn-action {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   border: none;
-  font-size: 24px;
+  font-size: 28px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-action:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
 
 .btn-action:active {
   transform: scale(0.95);
-}
-
-.btn-view {
-  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
 }
 
 .btn-add {
@@ -166,15 +150,31 @@ const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
 }
 
 @media (max-width: 768px) {
-  .card-header {
-    flex-direction: column;
-    text-align: center;
+  .avatar {
+    width: 100px;
+    height: 100px;
   }
 
-  .info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .avatar-placeholder {
+    font-size: 56px;
+  }
+
+  .name {
+    font-size: 24px;
+  }
+
+  .star-icon {
+    font-size: 32px;
+  }
+
+  .star-count {
+    font-size: 28px;
+  }
+
+  .btn-action {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
   }
 }
 </style>

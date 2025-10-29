@@ -103,6 +103,13 @@
         <p class="empty-hint">点击右上角 ➕ 创建第一个奖品吧！</p>
       </div>
     </div>
+
+    <!-- Reward Form Modal -->
+    <RewardFormModal
+      :show="showAddRewardModal"
+      @update:show="showAddRewardModal = $event"
+      @success="loadRewards"
+    />
   </div>
 </template>
 
@@ -112,6 +119,7 @@ import { useRouter } from 'vue-router'
 import { rewardsApi } from '@/api/rewards'
 import type { Reward } from '@/types'
 import { generateStarStack } from '@/utils/helpers'
+import RewardFormModal from '@/components/RewardFormModal.vue'
 
 const router = useRouter()
 const rewards = ref<Reward[]>([])

@@ -108,9 +108,10 @@ onMounted(() => {
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 30px;
+  position: relative;
 }
 
 .title {
@@ -123,6 +124,8 @@ onMounted(() => {
 }
 
 .btn-add {
+  position: absolute;
+  right: 0;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -167,10 +170,35 @@ onMounted(() => {
 }
 
 .children-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
   margin-bottom: 80px;
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.children-grid > * {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1080px) and (min-width: 769px) {
+  .children-grid {
+    max-width: 680px;
+  }
+}
+
+@media (max-width: 768px) {
+  .children-grid {
+    max-width: 320px;
+  }
+
+  .children-grid > * {
+    width: 100%;
+  }
 }
 
 .btn-rewards {
@@ -200,10 +228,6 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .children-grid {
-    grid-template-columns: 1fr;
-  }
-
   .title {
     font-size: 24px;
   }
