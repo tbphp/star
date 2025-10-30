@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Tests
+tests
+*.Test.php
+backend/phpunit.xml
+
+# Development files
+.env.example
+.editorconfig
+README.md
+
+# Dependencies (will be installed in container)
+vendor
+node_modules
+
+# Build artifacts
+npm-debug.log
+yarn-error.log
+
+# SQLite database (use MySQL in production)
+backend/database/database.sqlite
+backend/database/*.sqlite
+
+# Storage (mounted as volume)
+backend/storage/app/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+!backend/storage/app/public
+!backend/storage/app/.gitignore
+
+# Cache
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
