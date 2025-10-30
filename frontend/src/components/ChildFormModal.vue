@@ -6,7 +6,7 @@
           <div v-if="show" class="modal-content" @click.stop>
             <button class="btn-close" @click="handleClose">×</button>
 
-            <h2 class="modal-title">添加小朋友</h2>
+            <h2 class="modal-title">{{ isEdit ? '编辑小朋友' : '添加小朋友' }}</h2>
 
             <form @submit.prevent="handleSubmit" class="form">
               <div class="form-group avatar-group">
@@ -93,9 +93,11 @@
 import { ref, computed, watch } from 'vue'
 import { childrenApi } from '@/api/children'
 import { calculateAge, validateImageFile } from '@/utils/helpers'
+import type { Child } from '@/types'
 
 interface Props {
   show: boolean
+  child?: Child
 }
 
 interface Emits {
@@ -116,6 +118,8 @@ const avatarFile = ref<File>()
 const avatarPreview = ref('')
 const errorMessage = ref('')
 const submitting = ref(false)
+
+const isEdit = computed(() => !!props.child)
 
 const maxDate = computed(() => {
   const today = new Date()
@@ -163,10 +167,19 @@ const handleSubmit = async () => {
     submitting.value = true
     errorMessage.value = ''
 
-    await childrenApi.create({
-      ...formData.value,
-      avatar: avatarFile.value,
-    })
+    if (isEdit.value && props.child) {
+      // Edit mode
+      await childrenApi.update(props.child.id, {
+        ...formData.value,
+        avatar: avatarFile.value,
+      })
+    } else {
+      // Create mode
+      await childrenApi.create({
+        ...formData.value,
+        avatar: avatarFile.value,
+      })
+    }
 
     emit('success')
     handleClose()
@@ -180,13 +193,25 @@ const handleSubmit = async () => {
 // Reset form when modal opens
 watch(() => props.show, (newVal) => {
   if (newVal) {
-    formData.value = {
-      name: '',
-      birthday: '',
-      gender: 'male',
+    if (props.child) {
+      // Edit mode - pre-fill form
+      formData.value = {
+        name: props.child.name,
+        birthday: props.child.birthday,
+        gender: props.child.gender,
+      }
+      avatarPreview.value = props.child.avatar || ''
+      avatarFile.value = undefined
+    } else {
+      // Create mode - reset form
+      formData.value = {
+        name: '',
+        birthday: '',
+        gender: 'male',
+      }
+      avatarFile.value = undefined
+      avatarPreview.value = ''
     }
-    avatarFile.value = undefined
-    avatarPreview.value = ''
     errorMessage.value = ''
   }
 })

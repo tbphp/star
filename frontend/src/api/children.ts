@@ -44,6 +44,9 @@ export const childrenApi = {
     if (data.gender) formData.append('gender', data.gender)
     if (data.avatar) formData.append('avatar', data.avatar)
 
+    // Laravel method spoofing for PUT request with FormData
+    formData.append('_method', 'PUT')
+
     const response = await api.post<ApiResponse<Child>>(`/children/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })

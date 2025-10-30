@@ -5,7 +5,19 @@
     <div v-else-if="child" class="detail-container">
       <header class="detail-header">
         <button class="btn-back" @click="goBack">←</button>
-        <h1 class="page-title">{{ child.name }}</h1>
+        <h1 class="page-title"></h1>
+        <div class="header-actions">
+          <button class="btn-icon btn-edit" @click="handleEdit" title="编辑">
+            ✏️
+          </button>
+          <button
+            class="btn-icon btn-delete"
+            @click="handleDelete"
+            title="删除"
+          >
+            🗑️
+          </button>
+        </div>
       </header>
 
       <div class="child-info card">
@@ -142,6 +154,13 @@
       :reward="selectedReward"
       @success="handleRedeemSuccess"
     />
+
+    <!-- Edit Child Modal -->
+    <ChildFormModal
+      v-model:show="showEditModal"
+      :child="child || undefined"
+      @success="loadChildDetail"
+    />
   </div>
 </template>
 
@@ -153,6 +172,7 @@ import type { Child, StarRecord, Reward } from "@/types";
 import { getGenderEmoji } from "@/utils/helpers";
 import StarModal from "@/components/StarModal.vue";
 import RedeemModal from "@/components/RedeemModal.vue";
+import ChildFormModal from "@/components/ChildFormModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -163,6 +183,7 @@ const rewards = ref<Reward[]>([]);
 const loading = ref(true);
 const showStarModal = ref(false);
 const showRedeemModal = ref(false);
+const showEditModal = ref(false);
 const starOperationType = ref<"add" | "subtract">("add");
 const selectedReward = ref<Reward | null>(null);
 
@@ -240,6 +261,27 @@ const handleRedeemSuccess = () => {
   loadChildDetail();
 };
 
+const handleEdit = () => {
+  showEditModal.value = true;
+};
+
+const handleDelete = async () => {
+  if (!child.value) return;
+
+  const confirmed = confirm(
+    `确定要删除 ${child.value.name} 吗？此操作无法撤销。`
+  );
+  if (!confirmed) return;
+
+  try {
+    await childrenApi.delete(child.value.id);
+    router.push("/");
+  } catch (error) {
+    console.error("Failed to delete child:", error);
+    alert("删除失败，请重试");
+  }
+};
+
 onMounted(() => {
   loadChildDetail();
 });
@@ -293,6 +335,36 @@ onMounted(() => {
   font-weight: bold;
   color: #333;
   margin: 0;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+}
+
+.btn-edit:hover {
+  background: #e3f2fd;
+}
+
+.btn-delete:hover {
+  background: #ffebee;
 }
 
 .child-info {
