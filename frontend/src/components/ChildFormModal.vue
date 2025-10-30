@@ -190,31 +190,40 @@ const handleSubmit = async () => {
   }
 }
 
-// Reset form when modal opens
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    if (props.child) {
-      // Edit mode - pre-fill form
-      formData.value = {
-        name: props.child.name,
-        birthday: props.child.birthday,
-        gender: props.child.gender,
-      }
-      avatarPreview.value = props.child.avatar || ''
-      avatarFile.value = undefined
-    } else {
-      // Create mode - reset form
-      formData.value = {
-        name: '',
-        birthday: '',
-        gender: 'male',
-      }
-      avatarFile.value = undefined
-      avatarPreview.value = ''
+// Initialize form data
+const initializeForm = () => {
+  if (props.child) {
+    // Edit mode - pre-fill form
+    formData.value = {
+      name: props.child.name,
+      birthday: props.child.birthday,
+      gender: props.child.gender,
     }
-    errorMessage.value = ''
+    avatarPreview.value = props.child.avatar || ''
+    avatarFile.value = undefined
+  } else {
+    // Create mode - reset form
+    formData.value = {
+      name: '',
+      birthday: '',
+      gender: 'male',
+    }
+    avatarFile.value = undefined
+    avatarPreview.value = ''
   }
-})
+  errorMessage.value = ''
+}
+
+// Reset form when modal opens or child changes
+watch(
+  [() => props.show, () => props.child],
+  ([newShow, newChild]) => {
+    if (newShow) {
+      initializeForm()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

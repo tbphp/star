@@ -13,10 +13,18 @@
     </div>
 
     <div class="actions" @click.stop>
-      <button class="btn-action btn-add" @click="emit('addStar', child)" title="加星星">
+      <button
+        class="btn-action btn-add"
+        @click="emit('addStar', child)"
+        title="加星星"
+      >
         ➕
       </button>
-      <button class="btn-action btn-subtract" @click="emit('subtractStar', child)" title="减星星">
+      <button
+        class="btn-action btn-subtract"
+        @click="emit('subtractStar', child)"
+        title="减星星"
+      >
         ➖
       </button>
     </div>
@@ -24,28 +32,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { Child } from '@/types'
-import { getGenderEmoji } from '@/utils/helpers'
+import { computed } from "vue";
+import type { Child } from "@/types";
+import { getGenderEmoji } from "@/utils/helpers";
 
 interface Props {
-  child: Child
+  child: Child;
 }
 
 interface Emits {
-  (e: 'view', child: Child): void
-  (e: 'addStar', child: Child): void
-  (e: 'subtractStar', child: Child): void
+  (e: "view", child: Child): void;
+  (e: "addStar", child: Child): void;
+  (e: "subtractStar", child: Child): void;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
-const genderEmoji = computed(() => getGenderEmoji(props.child.gender))
+const genderEmoji = computed(() => getGenderEmoji(props.child.gender));
 
 const handleCardClick = () => {
-  emit('view', props.child)
-}
+  emit("view", props.child);
+};
 </script>
 
 <style scoped>
@@ -59,10 +67,10 @@ const handleCardClick = () => {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.child-card:hover {
+/* .child-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
-}
+} */
 
 .avatar {
   width: 120px;

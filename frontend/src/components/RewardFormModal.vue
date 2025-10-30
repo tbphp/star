@@ -6,7 +6,7 @@
           <div v-if="show" class="modal-content" @click.stop>
             <button class="btn-close" @click="handleClose">×</button>
 
-            <h2 class="modal-title">创建奖品</h2>
+            <h2 class="modal-title">{{ isEdit ? '编辑奖品' : '创建奖品' }}</h2>
 
             <form @submit.prevent="handleSubmit" class="form">
               <div class="form-group image-group">
@@ -98,11 +98,12 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { childrenApi } from '@/api/children'
 import { rewardsApi } from '@/api/rewards'
-import type { Child } from '@/types'
+import type { Child, Reward } from '@/types'
 import { validateImageFile, getGenderEmoji } from '@/utils/helpers'
 
 interface Props {
   show: boolean
+  reward?: Reward
 }
 
 interface Emits {
@@ -124,6 +125,8 @@ const selectedChildren = ref<number[]>([])
 const children = ref<Child[]>([])
 const errorMessage = ref('')
 const submitting = ref(false)
+
+const isEdit = computed(() => !!props.reward)
 
 const isValid = computed(() => {
   return formData.value.name && formData.value.star_cost > 0 && selectedChildren.value.length > 0
@@ -187,12 +190,23 @@ const handleSubmit = async () => {
     submitting.value = true
     errorMessage.value = ''
 
-    await rewardsApi.create({
-      name: formData.value.name,
-      star_cost: formData.value.star_cost,
-      child_ids: selectedChildren.value,
-      image: imageFile.value,
-    })
+    if (isEdit.value && props.reward) {
+      // Edit mode
+      await rewardsApi.update(props.reward.id, {
+        name: formData.value.name,
+        star_cost: formData.value.star_cost,
+        child_ids: selectedChildren.value,
+        image: imageFile.value,
+      })
+    } else {
+      // Create mode
+      await rewardsApi.create({
+        name: formData.value.name,
+        star_cost: formData.value.star_cost,
+        child_ids: selectedChildren.value,
+        image: imageFile.value,
+      })
+    }
 
     emit('success')
     handleClose()
@@ -203,9 +217,19 @@ const handleSubmit = async () => {
   }
 }
 
-// Reset form when modal opens
-watch(() => props.show, (newVal) => {
-  if (newVal) {
+// Initialize form data
+const initializeForm = () => {
+  if (props.reward) {
+    // Edit mode - pre-fill form
+    formData.value = {
+      name: props.reward.name,
+      star_cost: props.reward.star_cost,
+    }
+    imagePreview.value = props.reward.image || ''
+    imageFile.value = undefined
+    selectedChildren.value = props.reward.children?.map(c => c.id) || []
+  } else {
+    // Create mode - reset form
     formData.value = {
       name: '',
       star_cost: 100,
@@ -213,14 +237,26 @@ watch(() => props.show, (newVal) => {
     imageFile.value = undefined
     imagePreview.value = ''
     selectedChildren.value = []
-    errorMessage.value = ''
-    loadChildren()
   }
-})
+  errorMessage.value = ''
+}
+
+// Reset form when modal opens or reward changes
+watch(
+  [() => props.show, () => props.reward],
+  ([newShow, newReward]) => {
+    if (newShow) {
+      loadChildren()
+      initializeForm()
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   if (props.show) {
     loadChildren()
+    initializeForm()
   }
 })
 </script>

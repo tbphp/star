@@ -76,6 +76,14 @@ export interface RewardRedeemRequest {
   }>
 }
 
+// Reward update request
+export interface RewardUpdateRequest {
+  name?: string
+  star_cost?: number
+  child_ids?: number[]
+  image?: File
+}
+
 // Child form data
 export interface ChildFormData {
   name: string

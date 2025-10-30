@@ -108,6 +108,94 @@ class RewardController extends Controller
     }
 
     /**
+     * Update reward
+     */
+    public function update(Request $request, Reward $reward): JsonResponse
+    {
+        // Don't allow updating redeemed rewards
+        if ($reward->is_redeemed) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot update redeemed reward',
+            ], 400);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'star_cost' => 'sometimes|required|integer|min:1',
+            'image' => 'nullable|image|max:2048',
+            'child_ids' => 'sometimes|required|array|min:1',
+            'child_ids.*' => 'exists:children,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $reward) {
+                $data = [];
+
+                if ($request->has('name')) {
+                    $data['name'] = $request->input('name');
+                }
+                if ($request->has('star_cost')) {
+                    $data['star_cost'] = $request->input('star_cost');
+                }
+
+                // Handle image upload
+                if ($request->hasFile('image')) {
+                    // Delete old image
+                    if ($reward->image) {
+                        Storage::disk('public')->delete($reward->image);
+                    }
+                    $data['image'] = $request->file('image')->store('rewards', 'public');
+                }
+
+                // Update reward data
+                if (!empty($data)) {
+                    $reward->update($data);
+                }
+
+                // Update children if provided
+                if ($request->has('child_ids')) {
+                    $reward->children()->sync($request->input('child_ids'));
+                }
+            });
+
+            $reward->load('children:id,name,star_count,avatar');
+            $totalStars = $reward->children->sum('star_count');
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $reward->id,
+                    'name' => $reward->name,
+                    'image' => $reward->image ? url(Storage::url($reward->image)) : null,
+                    'star_cost' => $reward->star_cost,
+                    'is_redeemed' => $reward->is_redeemed,
+                    'children' => $reward->children->map(fn($child) => [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'star_count' => $child->star_count,
+                        'avatar' => $child->avatar ? url(Storage::url($child->avatar)) : null,
+                    ]),
+                    'total_stars' => $totalStars,
+                    'is_achieved' => $totalStars >= $reward->star_cost,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update reward',
+            ], 500);
+        }
+    }
+
+    /**
      * Redeem reward
      */
     public function redeem(Request $request, Reward $reward): JsonResponse

@@ -1,5 +1,5 @@
 <template>
-  <div class="reward-list">
+  <div class="reward-list" @click="closeMenuOnClickOutside">
     <header class="header">
       <button class="btn-back" @click="goBack">←</button>
       <h1 class="title">🎁 许愿墙</h1>
@@ -18,6 +18,32 @@
             :key="reward.id"
             class="reward-card card"
           >
+            <!-- Card Menu -->
+            <div class="card-menu">
+              <button
+                class="menu-trigger"
+                @click.stop="toggleMenu(reward.id)"
+                title="操作"
+              >
+                ⋮
+              </button>
+              <div
+                v-if="activeMenuId === reward.id"
+                class="menu-dropdown"
+                @click.stop
+              >
+                <button class="menu-item" @click="handleEditReward(reward)">
+                  ✏️ 编辑
+                </button>
+                <button
+                  class="menu-item delete"
+                  @click="handleDeleteReward(reward)"
+                >
+                  🗑️ 删除
+                </button>
+              </div>
+            </div>
+
             <div class="reward-image">
               <img v-if="reward.image" :src="reward.image" :alt="reward.name" />
               <span v-else class="image-placeholder">🎁</span>
@@ -132,10 +158,19 @@
       </div>
     </div>
 
-    <!-- Reward Form Modal -->
+    <!-- Reward Form Modal (Add) -->
     <RewardFormModal
       :show="showAddRewardModal"
       @update:show="showAddRewardModal = $event"
+      @success="loadRewards"
+    />
+
+    <!-- Reward Form Modal (Edit) -->
+    <RewardFormModal
+      v-if="editingReward"
+      :show="showEditRewardModal"
+      :reward="editingReward"
+      @update:show="showEditRewardModal = $event"
       @success="loadRewards"
     />
 
@@ -161,8 +196,11 @@ const router = useRouter();
 const rewards = ref<Reward[]>([]);
 const loading = ref(true);
 const showAddRewardModal = ref(false);
+const showEditRewardModal = ref(false);
 const showRedeemModal = ref(false);
 const selectedReward = ref<Reward | null>(null);
+const editingReward = ref<Reward | null>(null);
+const activeMenuId = ref<number | null>(null);
 
 const availableRewards = computed(() =>
   rewards.value.filter((r) => !r.is_redeemed)
@@ -194,6 +232,36 @@ const openRedeemModal = (reward: Reward) => {
 
 const handleRedeemSuccess = () => {
   loadRewards();
+};
+
+const toggleMenu = (rewardId: number) => {
+  activeMenuId.value = activeMenuId.value === rewardId ? null : rewardId;
+};
+
+const handleEditReward = (reward: Reward) => {
+  editingReward.value = reward;
+  showEditRewardModal.value = true;
+  activeMenuId.value = null;
+};
+
+const handleDeleteReward = async (reward: Reward) => {
+  const confirmed = confirm(`确定要删除 "${reward.name}" 吗？此操作无法撤销。`);
+  if (!confirmed) return;
+
+  try {
+    await rewardsApi.delete(reward.id);
+    await loadRewards();
+  } catch (error: any) {
+    const message = error.response?.data?.message || "删除失败";
+    alert(message);
+  } finally {
+    activeMenuId.value = null;
+  }
+};
+
+// Close menu when clicking outside
+const closeMenuOnClickOutside = () => {
+  activeMenuId.value = null;
 };
 
 onMounted(() => {
@@ -293,10 +361,94 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  position: relative;
 }
 
 .reward-card.redeemed {
   opacity: 0.7;
+}
+
+.card-menu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+}
+
+.menu-trigger {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.menu-trigger:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.menu-trigger:active {
+  transform: scale(0.95);
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 120px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-item {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: white;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-item:hover {
+  background: #f5f5f5;
+}
+
+.menu-item.delete {
+  color: #f44336;
+}
+
+.menu-item.delete:hover {
+  background: #ffebee;
 }
 
 .reward-image {

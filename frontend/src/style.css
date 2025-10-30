@@ -8,7 +8,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
   min-height: 100vh;
 }
@@ -52,19 +52,19 @@ body {
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.card:hover {
+/* .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16);
-}
+} */
 
 /* Star emoji styles */
 .star-filled {
-  color: #FFD700;
+  color: #ffd700;
   font-size: 24px;
 }
 
 .star-empty {
-  color: #E0E0E0;
+  color: #e0e0e0;
   font-size: 24px;
 }
 
