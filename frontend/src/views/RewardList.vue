@@ -2,7 +2,7 @@
   <div class="reward-list">
     <header class="header">
       <button class="btn-back" @click="goBack">←</button>
-      <h1 class="title">🎁 奖品墙</h1>
+      <h1 class="title">🎁 许愿墙</h1>
       <button class="btn-add" @click="showAddRewardModal = true">➕</button>
     </header>
 
@@ -11,7 +11,7 @@
     <div v-else class="rewards-container">
       <!-- Available Rewards -->
       <section v-if="availableRewards.length > 0" class="rewards-section">
-        <h2 class="section-title">🎯 可兑换奖品</h2>
+        <h2 class="section-title">🎯 可兑换</h2>
         <div class="rewards-grid">
           <div
             v-for="reward in availableRewards"
@@ -26,7 +26,9 @@
             <h3 class="reward-name">{{ reward.name }}</h3>
 
             <div class="cost-status-row">
-              <div class="reward-cost-inline">需要 {{ reward.star_cost }}⭐</div>
+              <div class="reward-cost-inline">
+                需要 {{ reward.star_cost }}⭐
+              </div>
               <div v-if="reward.is_achieved" class="status-badge achieved">
                 ✅ 可以兑换了
               </div>
@@ -58,7 +60,12 @@
               <div class="progress-bar-container">
                 <div
                   class="progress-bar-fill"
-                  :style="{ width: `${Math.min(((reward.total_stars || 0) / reward.star_cost) * 100, 100)}%` }"
+                  :style="{
+                    width: `${Math.min(
+                      ((reward.total_stars || 0) / reward.star_cost) * 100,
+                      100
+                    )}%`,
+                  }"
                 ></div>
               </div>
               <div class="progress-text">
@@ -71,7 +78,7 @@
               :disabled="!reward.is_achieved"
               @click="openRedeemModal(reward)"
             >
-              {{ reward.is_achieved ? '🎉 兑换' : '🔒 未达成' }}
+              {{ reward.is_achieved ? "🎉 兑换" : "🔒 未达成" }}
             </button>
           </div>
         </div>
@@ -114,9 +121,7 @@
               </div>
             </div>
 
-            <div class="redeemed-date">
-              已兑换 {{ reward.redeemed_at }}
-            </div>
+            <div class="redeemed-date">已兑换 {{ reward.redeemed_at }}</div>
           </div>
         </div>
       </section>
@@ -145,55 +150,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { rewardsApi } from '@/api/rewards'
-import type { Reward } from '@/types'
-import RewardFormModal from '@/components/RewardFormModal.vue'
-import RedeemModal from '@/components/RedeemModal.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { rewardsApi } from "@/api/rewards";
+import type { Reward } from "@/types";
+import RewardFormModal from "@/components/RewardFormModal.vue";
+import RedeemModal from "@/components/RedeemModal.vue";
 
-const router = useRouter()
-const rewards = ref<Reward[]>([])
-const loading = ref(true)
-const showAddRewardModal = ref(false)
-const showRedeemModal = ref(false)
-const selectedReward = ref<Reward | null>(null)
+const router = useRouter();
+const rewards = ref<Reward[]>([]);
+const loading = ref(true);
+const showAddRewardModal = ref(false);
+const showRedeemModal = ref(false);
+const selectedReward = ref<Reward | null>(null);
 
 const availableRewards = computed(() =>
   rewards.value.filter((r) => !r.is_redeemed)
-)
+);
 
 const redeemedRewards = computed(() =>
   rewards.value.filter((r) => r.is_redeemed)
-)
+);
 
 const loadRewards = async () => {
   try {
-    loading.value = true
-    rewards.value = await rewardsApi.getAll()
+    loading.value = true;
+    rewards.value = await rewardsApi.getAll();
   } catch (error) {
-    console.error('Failed to load rewards:', error)
+    console.error("Failed to load rewards:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const goBack = () => {
-  router.push('/')
-}
+  router.push("/");
+};
 
 const openRedeemModal = (reward: Reward) => {
-  selectedReward.value = reward
-  showRedeemModal.value = true
-}
+  selectedReward.value = reward;
+  showRedeemModal.value = true;
+};
 
 const handleRedeemSuccess = () => {
-  loadRewards()
-}
+  loadRewards();
+};
 
 onMounted(() => {
-  loadRewards()
-})
+  loadRewards();
+});
 </script>
 
 <style scoped>

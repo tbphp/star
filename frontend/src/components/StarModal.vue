@@ -54,7 +54,7 @@
               </div>
 
               <div class="reason-section">
-                <label class="label">📝 原因（选填）</label>
+                <!-- <label class="label">📝 原因（选填）</label> -->
                 <div class="reason-tags">
                   <button
                     v-for="tag in reasonTags"

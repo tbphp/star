@@ -24,9 +24,7 @@
         </div>
 
         <div class="action-buttons">
-          <button class="btn-action btn-add" @click="handleAddStar">
-            ➕
-          </button>
+          <button class="btn-action btn-add" @click="handleAddStar">➕</button>
           <button class="btn-action btn-subtract" @click="handleSubtractStar">
             ➖
           </button>
@@ -34,7 +32,7 @@
       </div>
 
       <div v-if="availableRewardsCount > 0" class="rewards-section card">
-        <h3 class="section-title">🎯 奖品目标</h3>
+        <h3 class="section-title">🎯 愿望单</h3>
         <div class="rewards-preview">
           <div
             v-for="reward in displayRewards"
@@ -44,7 +42,11 @@
           >
             <div class="reward-header">
               <div class="reward-image">
-                <img v-if="reward.image" :src="reward.image" :alt="reward.name" />
+                <img
+                  v-if="reward.image"
+                  :src="reward.image"
+                  :alt="reward.name"
+                />
                 <span v-else class="reward-placeholder">🎁</span>
               </div>
               <div class="reward-main">
@@ -57,7 +59,8 @@
                       :key="participant.id"
                       class="participant-tag"
                     >
-                      {{ getGenderEmoji(participant.gender) }} {{ participant.name }}
+                      {{ getGenderEmoji(participant.gender) }}
+                      {{ participant.name }}
                     </span>
                   </div>
                 </div>
@@ -83,7 +86,11 @@
             </button>
           </div>
         </div>
-        <button v-if="availableRewardsCount > 5" class="btn-view-more" @click="goToRewards">
+        <button
+          v-if="availableRewardsCount > 5"
+          class="btn-view-more"
+          @click="goToRewards"
+        >
           查看更多 ({{ availableRewardsCount - 5 }}个) →
         </button>
       </div>
@@ -102,7 +109,7 @@
           >
             <div class="record-left">
               <div class="record-amount" :class="record.type">
-                {{ record.amount > 0 ? '+' : '' }}{{ record.amount }}
+                {{ record.amount > 0 ? "+" : "" }}{{ record.amount }}
               </div>
               <div class="record-time">{{ record.created_at }}</div>
             </div>
@@ -139,103 +146,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { childrenApi } from '@/api/children'
-import type { Child, StarRecord, Reward } from '@/types'
-import { getGenderEmoji } from '@/utils/helpers'
-import StarModal from '@/components/StarModal.vue'
-import RedeemModal from '@/components/RedeemModal.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { childrenApi } from "@/api/children";
+import type { Child, StarRecord, Reward } from "@/types";
+import { getGenderEmoji } from "@/utils/helpers";
+import StarModal from "@/components/StarModal.vue";
+import RedeemModal from "@/components/RedeemModal.vue";
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-const child = ref<Child | null>(null)
-const records = ref<StarRecord[]>([])
-const rewards = ref<Reward[]>([])
-const loading = ref(true)
-const showStarModal = ref(false)
-const showRedeemModal = ref(false)
-const starOperationType = ref<'add' | 'subtract'>('add')
-const selectedReward = ref<Reward | null>(null)
+const child = ref<Child | null>(null);
+const records = ref<StarRecord[]>([]);
+const rewards = ref<Reward[]>([]);
+const loading = ref(true);
+const showStarModal = ref(false);
+const showRedeemModal = ref(false);
+const starOperationType = ref<"add" | "subtract">("add");
+const selectedReward = ref<Reward | null>(null);
 
 const genderEmoji = computed(() =>
-  child.value ? getGenderEmoji(child.value.gender) : ''
-)
+  child.value ? getGenderEmoji(child.value.gender) : ""
+);
 
 const displayRewards = computed(() => {
-  return rewards.value.filter(r => !r.is_redeemed).slice(0, 5)
-})
+  return rewards.value.filter((r) => !r.is_redeemed).slice(0, 5);
+});
 
 const availableRewardsCount = computed(() => {
-  return rewards.value.filter(r => !r.is_redeemed).length
-})
+  return rewards.value.filter((r) => !r.is_redeemed).length;
+});
 
 const getRewardStars = (reward: Reward) => {
-  return reward.total_stars || 0
-}
+  return reward.total_stars || 0;
+};
 
 const getRewardProgress = (reward: Reward) => {
-  const current = reward.total_stars || 0
-  const total = reward.star_cost
-  return Math.min((current / total) * 100, 100)
-}
+  const current = reward.total_stars || 0;
+  const total = reward.star_cost;
+  return Math.min((current / total) * 100, 100);
+};
 
 const isRewardAchieved = (reward: Reward) => {
-  const current = reward.total_stars || 0
-  return current >= reward.star_cost
-}
+  const current = reward.total_stars || 0;
+  return current >= reward.star_cost;
+};
 
 const getRewardParticipants = (reward: Reward) => {
-  return reward.children || []
-}
+  return reward.children || [];
+};
 
 const loadChildDetail = async () => {
   try {
-    loading.value = true
-    const childId = parseInt(route.params.id as string)
-    const data = await childrenApi.getById(childId)
+    loading.value = true;
+    const childId = parseInt(route.params.id as string);
+    const data = await childrenApi.getById(childId);
 
-    child.value = data
-    records.value = data.star_records || []
-    rewards.value = data.rewards || []
+    child.value = data;
+    records.value = data.star_records || [];
+    rewards.value = data.rewards || [];
   } catch (error) {
-    console.error('Failed to load child detail:', error)
+    console.error("Failed to load child detail:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const goBack = () => {
-  router.push('/')
-}
+  router.push("/");
+};
 
 const handleAddStar = () => {
-  starOperationType.value = 'add'
-  showStarModal.value = true
-}
+  starOperationType.value = "add";
+  showStarModal.value = true;
+};
 
 const handleSubtractStar = () => {
-  starOperationType.value = 'subtract'
-  showStarModal.value = true
-}
+  starOperationType.value = "subtract";
+  showStarModal.value = true;
+};
 
 const goToRewards = () => {
-  router.push('/rewards')
-}
+  router.push("/rewards");
+};
 
 const openRedeemModal = (reward: Reward) => {
-  selectedReward.value = reward
-  showRedeemModal.value = true
-}
+  selectedReward.value = reward;
+  showRedeemModal.value = true;
+};
 
 const handleRedeemSuccess = () => {
-  loadChildDetail()
-}
+  loadChildDetail();
+};
 
 onMounted(() => {
-  loadChildDetail()
-})
+  loadChildDetail();
+});
 </script>
 
 <style scoped>
@@ -353,8 +360,13 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 .star-count {
