@@ -100,7 +100,7 @@ class ChildController extends Controller
             'name' => 'required|string|max:255',
             'birthday' => 'required|date',
             'gender' => 'required|in:male,female',
-            'avatar' => 'nullable|image|max:2048',
+            'avatar' => 'nullable|image|max:102400',
         ]);
 
         if ($validator->fails()) {
