@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   backend:
     build:
@@ -15,8 +13,6 @@ services:
       - DB_CONNECTION=sqlite
       - DB_DATABASE=/var/www/html/storage/app/database.sqlite
     restart: unless-stopped
-    networks:
-      - star-network
 
   nginx:
     image: nginx:alpine
@@ -30,12 +26,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-    networks:
-      - star-network
 
 volumes:
   app-public:
-
-networks:
-  star-network:
-    driver: bridge
