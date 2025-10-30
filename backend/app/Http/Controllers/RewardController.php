@@ -18,7 +18,7 @@ class RewardController extends Controller
      */
     public function index(): JsonResponse
     {
-        $rewards = Reward::with('children:id,name,star_count')
+        $rewards = Reward::with('children:id,name,star_count,avatar')
             ->orderBy('is_redeemed')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -32,7 +32,7 @@ class RewardController extends Controller
                 return [
                     'id' => $reward->id,
                     'name' => $reward->name,
-                    'image' => $reward->image ? url(Storage::url($reward->image)) : null,
+                    'image' => $reward->image ? Storage::url($reward->image) : null,
                     'star_cost' => $reward->star_cost,
                     'is_redeemed' => $reward->is_redeemed,
                     'redeemed_at' => $reward->redeemed_at?->format('Y-m-d H:i'),
@@ -40,6 +40,7 @@ class RewardController extends Controller
                         'id' => $child->id,
                         'name' => $child->name,
                         'star_count' => $child->star_count,
+                        'avatar' => $child->avatar ? Storage::url($child->avatar) : null,
                     ]),
                     'total_stars' => $totalStars,
                     'is_achieved' => $isAchieved,
@@ -93,7 +94,7 @@ class RewardController extends Controller
                 'data' => [
                     'id' => $reward->id,
                     'name' => $reward->name,
-                    'image' => $reward->image ? url(Storage::url($reward->image)) : null,
+                    'image' => $reward->image ? Storage::url($reward->image) : null,
                     'star_cost' => $reward->star_cost,
                     'children' => $reward->children,
                 ],

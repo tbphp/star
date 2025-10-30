@@ -24,38 +24,52 @@
             </div>
 
             <h3 class="reward-name">{{ reward.name }}</h3>
-            <div class="reward-cost">需要 {{ reward.star_cost }}⭐</div>
+
+            <div class="cost-status-row">
+              <div class="reward-cost-inline">需要 {{ reward.star_cost }}⭐</div>
+              <div v-if="reward.is_achieved" class="status-badge achieved">
+                ✅ 可以兑换了
+              </div>
+              <div v-else class="status-badge pending">
+                ⏳ 还差{{ reward.star_cost - (reward.total_stars || 0) }}⭐
+              </div>
+            </div>
 
             <div class="participants">
-              <span
+              <div
                 v-for="child in reward.children"
                 :key="child.id"
-                class="participant"
+                class="participant-avatar"
+                :title="child.name"
               >
-                {{ getGenderEmoji(child) }} {{ child.name }}
-              </span>
+                <img
+                  v-if="child.avatar"
+                  :src="child.avatar"
+                  :alt="child.name"
+                  class="avatar-image"
+                />
+                <div v-else class="avatar-placeholder">
+                  {{ child.name.charAt(0) }}
+                </div>
+              </div>
             </div>
 
             <div class="progress-section">
-              <div class="star-progress">
-                {{ generateStarStack(reward.total_stars || 0, reward.star_cost) }}
+              <div class="progress-bar-container">
+                <div
+                  class="progress-bar-fill"
+                  :style="{ width: `${Math.min(((reward.total_stars || 0) / reward.star_cost) * 100, 100)}%` }"
+                ></div>
               </div>
               <div class="progress-text">
-                ({{ reward.total_stars || 0 }}/{{ reward.star_cost }})
+                {{ reward.total_stars || 0 }}/{{ reward.star_cost }}⭐
               </div>
-            </div>
-
-            <div v-if="reward.is_achieved" class="status-badge achieved">
-              ✅ 可以兑换了！
-            </div>
-            <div v-else class="status-badge pending">
-              ⏳ 还差{{ reward.star_cost - (reward.total_stars || 0) }}⭐
             </div>
 
             <button
               class="btn-redeem"
               :disabled="!reward.is_achieved"
-              @click="handleRedeem(reward)"
+              @click="openRedeemModal(reward)"
             >
               {{ reward.is_achieved ? '🎉 兑换' : '🔒 未达成' }}
             </button>
@@ -82,13 +96,22 @@
             <div class="reward-cost">需要 {{ reward.star_cost }}⭐</div>
 
             <div class="participants">
-              <span
+              <div
                 v-for="child in reward.children"
                 :key="child.id"
-                class="participant"
+                class="participant-avatar"
+                :title="child.name"
               >
-                {{ getGenderEmoji(child) }} {{ child.name }}
-              </span>
+                <img
+                  v-if="child.avatar"
+                  :src="child.avatar"
+                  :alt="child.name"
+                  class="avatar-image"
+                />
+                <div v-else class="avatar-placeholder">
+                  {{ child.name.charAt(0) }}
+                </div>
+              </div>
             </div>
 
             <div class="redeemed-date">
@@ -110,6 +133,14 @@
       @update:show="showAddRewardModal = $event"
       @success="loadRewards"
     />
+
+    <!-- Redeem Modal -->
+    <RedeemModal
+      v-if="selectedReward"
+      v-model:show="showRedeemModal"
+      :reward="selectedReward"
+      @success="handleRedeemSuccess"
+    />
   </div>
 </template>
 
@@ -118,13 +149,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { rewardsApi } from '@/api/rewards'
 import type { Reward } from '@/types'
-import { generateStarStack } from '@/utils/helpers'
 import RewardFormModal from '@/components/RewardFormModal.vue'
+import RedeemModal from '@/components/RedeemModal.vue'
 
 const router = useRouter()
 const rewards = ref<Reward[]>([])
 const loading = ref(true)
 const showAddRewardModal = ref(false)
+const showRedeemModal = ref(false)
+const selectedReward = ref<Reward | null>(null)
 
 const availableRewards = computed(() =>
   rewards.value.filter((r) => !r.is_redeemed)
@@ -133,11 +166,6 @@ const availableRewards = computed(() =>
 const redeemedRewards = computed(() =>
   rewards.value.filter((r) => r.is_redeemed)
 )
-
-const getGenderEmoji = (child: any) => {
-  // Simple gender emoji - you can import from helpers if needed
-  return '👤'
-}
 
 const loadRewards = async () => {
   try {
@@ -154,10 +182,13 @@ const goBack = () => {
   router.push('/')
 }
 
-const handleRedeem = (reward: Reward) => {
-  // TODO: Open redeem modal
-  console.log('Redeem reward:', reward)
-  alert('兑换功能即将开放！请稍后...')
+const openRedeemModal = (reward: Reward) => {
+  selectedReward.value = reward
+  showRedeemModal.value = true
+}
+
+const handleRedeemSuccess = () => {
+  loadRewards()
 }
 
 onMounted(() => {
@@ -320,38 +351,64 @@ onMounted(() => {
   gap: 8px;
   justify-content: center;
   margin-bottom: 12px;
-}
-
-.participant {
-  padding: 6px 12px;
-  background: #f0f0f0;
-  border-radius: 12px;
-  font-size: 14px;
-  color: #666;
-}
-
-.progress-section {
-  margin-bottom: 12px;
   width: 100%;
 }
 
-.star-progress {
-  font-size: 20px;
-  margin-bottom: 4px;
-  word-wrap: break-word;
+.participant-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #f0f0f0;
+  transition: transform 0.2s;
+  cursor: pointer;
 }
 
-.progress-text {
-  font-size: 14px;
-  color: #666;
+.participant-avatar:hover {
+  transform: scale(1.1);
+  border-color: #f093fb;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.cost-status-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.reward-cost-inline {
+  font-size: 16px;
+  color: #ff8c00;
+  font-weight: 600;
 }
 
 .status-badge {
-  padding: 8px 16px;
-  border-radius: 16px;
-  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 600;
-  margin-bottom: 12px;
+  white-space: nowrap;
 }
 
 .status-badge.achieved {
@@ -362,6 +419,40 @@ onMounted(() => {
 .status-badge.pending {
   background: #fff3e0;
   color: #ff9800;
+}
+
+.progress-section {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
+.progress-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff8c00;
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
 }
 
 .btn-redeem {

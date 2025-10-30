@@ -42,6 +42,8 @@ export interface ChildInReward {
   id: number
   name: string
   star_count: number
+  gender: 'male' | 'female'
+  avatar: string | null
 }
 
 // API Response types

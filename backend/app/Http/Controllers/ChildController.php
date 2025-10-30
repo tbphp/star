@@ -46,7 +46,9 @@ class ChildController extends Controller
         ]);
 
         // Load rewards this child is participating in
-        $child->load('rewards:id,name,image,star_cost,is_redeemed');
+        $child->load(['rewards' => function ($query) {
+            $query->with('children:id,name,gender,star_count');
+        }]);
 
         return response()->json([
             'success' => true,
@@ -76,6 +78,14 @@ class ChildController extends Controller
                     'image' => $reward->image ? Storage::url($reward->image) : null,
                     'star_cost' => $reward->star_cost,
                     'is_redeemed' => $reward->is_redeemed,
+                    'children' => $reward->children->map(fn($child) => [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'gender' => $child->gender,
+                        'star_count' => $child->star_count,
+                    ]),
+                    'total_stars' => $reward->children->sum('star_count'),
+                    'is_achieved' => $reward->children->sum('star_count') >= $reward->star_cost,
                 ]),
             ],
         ]);
